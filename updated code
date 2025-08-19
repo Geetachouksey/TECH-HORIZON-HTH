@@ -1,0 +1,152 @@
+Stress Detection System with ECG, SpO2, and Vibration Monitoring
+This repository contains a comprehensive stress detection system built using Raspberry Pi Pico (RP2040) that monitors physiological signals including ECG, blood oxygen levels (SpO2), and environmental vibrations to detect stress conditions.
+
+Features
+ECG Monitoring: Analog ECG signal acquisition and real-time waveform display
+
+SpO2 Measurement: MAX30100 sensor for pulse oximetry and oxygen saturation monitoring
+
+Vibration Detection: Environmental vibration sensing for object detection
+
+OLED Display: SH1106 128x64 OLED for real-time data visualization
+
+Data Logging: SD card storage for recording stress events
+
+Audio Feedback: Buzzer for alerts and guided breathing exercises
+
+Stress Detection Algorithm: Identifies stress conditions based on SpO2 levels
+
+Hardware Components
+Raspberry Pi Pico (RP2040 microcontroller)
+
+MAX30100 Pulse Oximeter and Heart-Rate Sensor
+
+SH1106 128x64 OLED Display
+
+ECG Sensor (Analog)
+
+Vibration Sensor
+
+MicroSD Card Module
+
+Passive Buzzer
+
+Breadboard and connecting wires
+
+Pin Configuration
+Component	Pico Pin
+ECG Sensor	GP26 (ADC0)
+MAX30100 SCL	GP5
+MAX30100 SDA	GP4
+OLED SCL	GP7
+OLED SDA	GP6
+Vibration Sensor	GP10
+SD Card SCK	GP18
+SD Card MOSI	GP19
+SD Card MISO	GP16
+SD Card CS	GP20
+Buzzer	GP21
+Software Implementation
+Key Functions
+ECG Monitoring:
+
+python
+ecg = ADC(Pin(26))  # GP26 = ADC0
+ecg_value = ecg.read_u16()
+ecg_voltage = (ecg_value / 65535) * 3.3
+SpO2 Measurement:
+
+python
+i2c1 = I2C(0, scl=Pin(5), sda=Pin(4))
+spo2_sensor = MAX30100(i2c1)
+ir, red = spo2_sensor.read_fifo()
+oxygen = 85 + ((red % 100) / 2)
+Vibration Detection:
+
+python
+vibration = Pin(10, Pin.IN, Pin.PULL_DOWN)
+vib_status = "YES" if vibration.value() == 1 else "NO"
+OLED Display:
+
+python
+i2c2 = I2C(1, scl=Pin(7), sda=Pin(6), freq=400000)
+oled = sh1106.SH1106_I2C(128, 64, i2c2)
+Data Logging:
+
+python
+spi = SPI(0, baudrate=100000, polarity=0, phase=0,
+          sck=Pin(18), mosi=Pin(19), miso=Pin(16))
+cs = Pin(20, Pin.OUT)
+sd = sdcard.SDCard(spi, cs)
+Audio Feedback:
+
+python
+buzzer = PWM(Pin(21))
+def play_tone(freq, duration=500):
+    buzzer.freq(freq)
+    buzzer.duty_u16(30000)
+    time.sleep_ms(duration)
+    buzzer.duty_u16(0)
+Stress Detection Algorithm
+The system triggers stress alerts when:
+
+SpO2 levels drop below 90%
+
+Vibration sensor detects environmental disturbances
+
+python
+if oxygen < 90:
+    # Display breathing guidance
+    # Play relaxing music
+    # Log the event to SD card
+Usage
+Clone this repository
+
+Upload the code to Raspberry Pi Pico
+
+Connect all hardware components as per pin configuration
+
+The system will:
+
+Continuously monitor ECG, SpO2, and vibration
+
+Display real-time data on OLED
+
+Trigger alerts for stress conditions
+
+Log events to SD card
+
+Demonstration
+https://images/block_diagram.png
+
+The OLED displays:
+
+Real-time ECG waveform
+
+Current SpO2 percentage
+
+Vibration detection status
+
+Stress alerts and breathing guidance when triggered
+
+Dependencies
+sh1106.py - OLED display driver
+
+max30100.py - SpO2 sensor driver
+
+sdcard.py - SD card interface
+
+Future Enhancements
+Implement proper heart rate variability (HRV) analysis
+
+Add Bluetooth/WiFi connectivity for remote monitoring
+
+Develop mobile app for data visualization
+
+Improve SpO2 calculation algorithm
+
+Add temperature monitoring
+
+License
+This project is open-source and available under the MIT License.
+
